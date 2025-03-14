@@ -8,32 +8,6 @@ SERVER_PORT = 6501
 server_address_port = (SERVER_IP, SERVER_PORT)
 
 
-class Data:
-    """Класс для хранения числового значения"""
-    value = 0.0  # Число, которое будем передавать
-    seconds = 0  # Время в секундах
-    start_time = time.time()  # Засекаем стартовое время
-
-
-class DataTransforms:
-
-    @staticmethod
-    def update_value(send_array):
-        """Функция обновляет передаваемое значение."""
-        Data.value += 0.5  # Каждую секунду увеличиваем значение на 0.5
-
-        # Обновляем массив отправки
-        send_array[2] = Data.value
-        return send_array
-
-    @staticmethod
-    def update_time(send_array):
-        """Обновляет время в секундах"""
-        Data.seconds = int(time.time() - Data.start_time)  # Только секунды
-        send_array[3] = Data.seconds  # Записываем в массив
-        return send_array
-
-
 class Client:
     @staticmethod
     def send_data(array):
@@ -66,15 +40,14 @@ try:
     while True:
         get_array = client.get_data(UDPClientSocket)  # Получаем данные от VR Concept
 
-        # Обновляем массив для отправки в зависимости от положения объекта
-        send_array = DataTransforms.update_value(send_array)
-        send_array = DataTransforms.update_time(send_array)
-
-        send_array[4] = round(random.random() * 100, 3)
+        send_array[0] += 0.001  # смещение по оси х
+        send_array[1] += 0.001  # смещение по оси z
+        send_array[2] -= 0.2  # угол поворота
+        send_array[3] = random.randint(1, 10 ** 8) * 0.001
 
         # Отправляем обновленные данные
         client.send_data(send_array)
-        time.sleep(1)
+        time.sleep(0.001)
 except KeyboardInterrupt:
     print("Программа завершена пользователем.")
 except Exception as e:
